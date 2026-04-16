@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking - Smart Hostel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --sidebar-bg: #161e2d;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent-cyan: #00d2ff;
+            --accent-purple: #7e22ce;
+            --text-gray: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-glass);
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .sidebar h2 {
+            color: var(--accent-cyan);
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+        }
+
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar ul li {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar ul li:hover, .sidebar ul li.active {
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.1), rgba(126, 34, 206, 0.1));
+            color: white;
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .btn-logout { color: #f87171 !important; margin-top: 50px !important; }
+
+        /* --- Main Content --- */
+        .main-content {
+            margin-left: 250px;
+            padding: 40px;
+            width: calc(100% - 250px);
+            box-sizing: border-box;
+        }
+
+        .header-box { margin-bottom: 30px; }
+        .header-box h2 { font-size: 2rem; margin: 0; }
+
+        .room-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .room-card { 
+            background: var(--card-bg); border-radius: 20px; overflow: hidden;
+            border: 1px solid var(--border-glass); transition: 0.3s;
+        }
+        .room-card:hover { transform: translateY(-10px); border-color: var(--accent-cyan); }
+        .room-card img { width: 100%; height: 180px; object-fit: cover; background: #1e293b; }
+        .room-info { padding: 20px; }
+        .price-tag { font-size: 1.4rem; font-weight: bold; margin: 10px 0; color: var(--accent-cyan); }
+        
+        .book-btn { 
+            width: 100%; background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan)); 
+            border: none; padding: 12px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer;
+            transition: 0.3s;
+        }
+        .book-btn:hover { opacity: 0.9; transform: scale(1.02); }
+
+        /* --- Table/Report Section --- */
+        .report-section { 
+            margin-top: 50px; background: var(--card-bg); padding: 30px; 
+            border-radius: 20px; border: 1px solid var(--border-glass);
+        }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-glass); }
+        th { color: var(--accent-cyan); text-transform: uppercase; font-size: 0.85rem; }
+        
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>SMART HOSTEL</h2>
+        <ul>
+            <li onclick="location.href='user_dashboard.html'"><i class="fa fa-home"></i> Dashboard</li>
+            <li class="active" onclick="location.href='user_rooms.html'"><i class="fa fa-bed"></i> Book a Room</li>
+            <li onclick="location.href='user_profile.html'"><i class="fa fa-user"></i> My Profile</li>
+            <li class="btn-logout" onclick="location.href='index.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header-box">
+            <h2>Available Rooms</h2>
+            <p style="color: var(--text-gray);">Choose your preferred stay and proceed to payment</p>
+        </div>
+
+        <div class="room-container" id="roomDisplay">
+            <p style="color: var(--text-gray);">Loading available rooms...</p>
+        </div>
+
+        <div class="report-section">
+            <div class="table-header">
+                <h3>My Booking History</h3>
+                <div>
+                    <button class="btn-sm btn-pdf" onclick="exportPDF()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-left:10px;">PDF Report</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Date</th>
+                        <th>Cost</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingList">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function loadAvailableRooms() {
+            const rooms = JSON.parse(localStorage.getItem('allRooms')) || [];
+            const roomDisplay = document.getElementById('roomDisplay');
+
+            if (rooms.length === 0) {
+                roomDisplay.innerHTML = `<p style="color: var(--text-gray); grid-column: 1/-1; text-align: center; padding: 40px; border: 1px dashed var(--border-glass); border-radius: 20px;">No rooms have been added by the Admin yet.</p>`;
+                return;
+            }
+
+            roomDisplay.innerHTML = rooms.map(room => `
+                <div class="room-card">
+                    <img src="${room.image || 'https://via.placeholder.com/500x300?text=No+Image'}" alt="${room.name}">
+                    <div class="room-info">
+                        <h4>${room.name}</h4>
+                        <div class="price-tag">৳ ${room.price} <small>/mo</small></div>
+                        <button class="book-btn" onclick="requestBooking('${room.name}', '৳ ${room.price}')">Confirm Booking</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function requestBooking(roomType, price) {
+            const room = encodeURIComponent(roomType);
+            const cost = encodeURIComponent(price);
+            window.location.href = `booking.html?room=${room}&price=${cost}`;
+        }
+        function loadBookings() {
+            const bookings = JSON.parse(localStorage.getItem('myBookings')) || [];
+            const tbody = document.getElementById('bookingList');
+            
+            if (bookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-gray)">No bookings found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = bookings.map(b => `
+                <tr>
+                    <td>${b.room}</td>
+                    <td>${b.in}</td>
+                    <td style="color:var(--accent-cyan)">${b.total}</td>
+                    <td><span class="status-badge ${b.status.toLowerCase()}">${b.status}</span></td>
+                </tr>
+            `).reverse().join('');
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Smart Hostel - Booking Report", 14, 15);
+            doc.autoTable({
+                html: 'table',
+                startY: 20,
+                theme: 'grid'
+            });
+            doc.save("booking_history.pdf");
+        }
+
+       
+        window.onload = function() {
+            loadAvailableRooms();
+            loadBookings();
+        };
+    </script>
+</body>
+</html>

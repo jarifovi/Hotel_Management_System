@@ -1,0 +1,187 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #0f172a; /* Matching deep dark blue */
+    overflow-y: auto; /* Allows scrolling if the form is tall on small screens */
+    padding: 20px 0;
+}
+
+/* Background Lighting Effect */
+body::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(#7000ff, #00d2ff); /* Purple to Blue gradient */
+    border-radius: 50%;
+    filter: blur(120px);
+    top: 10%;
+    right: 15%;
+    z-index: -1;
+}
+
+/* Glassmorphism Container */
+.container {
+    width: 450px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(15px);
+    transition: 0.5s;
+}
+
+.container:hover {
+    border: 1px solid rgba(112, 0, 255, 0.4);
+    box-shadow: 0 0 30px rgba(112, 0, 255, 0.15);
+}
+
+h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 25px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-group label {
+    color: #cbd5e1;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    outline: none;
+    color: #fff;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #00d2ff;
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+}
+
+/* Role Selection Styling */
+.role-select label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.role-options {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.role-box {
+    flex: 1;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.role-box span {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+/* Hide default radio, style the box instead */
+.role-box input[type="radio"] {
+    accent-color: #00d2ff;
+}
+
+.role-box:has(input:checked) {
+    background: rgba(0, 210, 255, 0.1);
+    border-color: #00d2ff;
+}
+
+.role-box:has(input:checked) span {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Button & Effects */
+button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(45deg, #00d2ff, #7000ff);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3);
+}
+
+button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(112, 0, 255, 0.4);
+}
+
+button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 10px rgba(0, 210, 255, 0.2);
+}
+
+.switch {
+    text-align: center;
+    margin-top: 20px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.switch a {
+    color: #00d2ff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.switch a:hover {
+    text-decoration: underline;
+}
+
+/* Custom Scrollbar for the dark theme */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+}

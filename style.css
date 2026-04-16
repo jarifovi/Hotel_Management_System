@@ -1,0 +1,195 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #0f172a; /* Deep midnight blue */
+    color: #fff;
+    overflow-x: hidden;
+}
+
+/* Global Lighting Background */
+body::before {
+    content: '';
+    position: fixed;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0, 210, 255, 0.15), transparent 70%);
+    top: -100px;
+    right: -100px;
+    z-index: -1;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(112, 0, 255, 0.1), transparent 70%);
+    bottom: -200px;
+    left: -200px;
+    z-index: -1;
+}
+
+/* Navbar - Frosted Glass */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00d2ff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #cbd5e1;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+nav ul li a:hover {
+    color: #00d2ff;
+    text-shadow: 0 0 8px rgba(0, 210, 255, 0.8);
+}
+
+/* Hero Section */
+.hero {
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+    background: linear-gradient(to right, #fff, #00d2ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Features Section */
+.features {
+    padding: 80px 8%;
+    text-align: center;
+}
+
+.features h1 {
+    margin-bottom: 60px;
+    font-size: 2.5rem;
+    color: #fff;
+}
+
+.feature-box {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 50px;
+}
+
+.box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease;
+    cursor: default;
+    backdrop-filter: blur(5px);
+}
+
+/* Feature Box Hover Effect - "The Glow Up" */
+.box:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #00d2ff;
+    box-shadow: 0 10px 30px rgba(0, 210, 255, 0.2);
+    color: #00d2ff;
+}
+
+/* Footer */
+footer {
+    padding: 40px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 50px;
+}
+
+footer p {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.hero .overlay {
+    animation: float 4s ease-in-out infinite;
+}
+/* Constant Color-Shifting RGB Effect */
+.rgb-shifting {
+    /* High saturation colors for a better "light" effect */
+    background: linear-gradient(
+        to right, 
+        #ff0000, #00ff00, #0000ff, #ff0000
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+    /* Dual animation: sliding the gradient AND rotating the hue */
+    animation: 
+        slide-bg 2s linear infinite,
+        hue-cycle 3s linear infinite;
+    
+    font-weight: 800;
+    /* This creates the "glow" that changes color with the text */
+    filter: drop-shadow(0 0 8px currentColor); 
+}
+
+/* Animation 1: Moves the colors across the text */
+@keyframes slide-bg {
+    to { background-position: 200% center; }
+}
+
+/* Animation 2: Changes the actual colors every moment */
+@keyframes hue-cycle {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(360deg); }
+}

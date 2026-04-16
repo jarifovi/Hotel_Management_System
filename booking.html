@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Smart Hostel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent-cyan: #00d2ff;
+            --accent-purple: #7e22ce;
+            --text-gray: #94a3b8;
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white; font-family: 'Segoe UI', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: 20px;
+        }
+
+        .booking-card {
+            background: var(--card-bg);
+            padding: 35px; border-radius: 20px;
+            width: 100%; max-width: 480px;
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        h2 { color: var(--accent-cyan); text-align: center; margin-bottom: 25px; font-weight: 600; }
+        .summary {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px; border-radius: 12px; margin-bottom: 25px;
+            border: 1px dashed var(--accent-cyan);
+        }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .summary-row span:first-child { color: var(--text-gray); }
+        .total-price { font-size: 1.5rem; font-weight: bold; color: var(--accent-cyan); margin-top: 10px; }
+        .methods-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;
+        }
+        .method-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border-glass);
+            padding: 15px; border-radius: 12px;
+            cursor: pointer; text-align: center; transition: 0.3s;
+        }
+        .method-item:hover, .method-item.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 210, 255, 0.08);
+        }
+        .method-item img { height: 30px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .method-item p { margin: 0; font-size: 0.85rem; color: #fff; }
+
+        /* Form Inputs */
+        .input-group { margin-top: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--text-gray); font-size: 0.9rem; }
+        input {
+            width: 100%; padding: 14px; border-radius: 10px;
+            border: 1px solid var(--border-glass);
+            background: rgba(0,0,0,0.3); color: white;
+            outline: none; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent-cyan); }
+
+        .pay-btn {
+            width: 100%; padding: 16px; margin-top: 30px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+            border: none; border-radius: 12px; color: white;
+            font-weight: bold; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.2);
+        }
+        .pay-btn:hover { transform: translateY(-2px); opacity: 0.95; }
+
+        .cancel-btn { 
+            display: block; text-align: center; margin-top: 15px; 
+            color: var(--text-gray); text-decoration: none; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="booking-card">
+    <h2><i class="fa fa-lock"></i> Payment Gateway</h2>
+
+    <div class="summary">
+        <div class="summary-row">
+            <span>Selected Room:</span>
+            <span id="room-name">--</span>
+        </div>
+        <div class="summary-row">
+            <span>Payment Status:</span>
+            <span style="color: #fbbf24;">Awaiting Payment</span>
+        </div>
+        <div class="total-price" id="room-price">৳ 0</div>
+    </div>
+
+    <label>Select Payment Method</label>
+    <div class="methods-grid">
+        <div class="method-item active" onclick="setMethod('Mobile', this)">
+            <div style="display: flex; justify-content: center; gap: 5px;">
+                <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" alt="bKash">
+                <img src="https://www.logo.wine/a/logo/Nagad/Nagad-Logo.wine.svg" alt="Nagad">
+            </div>
+            <p>Mobile Banking</p>
+        </div>
+        <div class="method-item" onclick="setMethod('Card', this)">
+            <div style="display: flex; justify-content: center; gap: 5px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
+            </div>
+            <p>Card Payment</p>
+        </div>
+    </div>
+
+    <form id="payForm">
+        <div class="input-group">
+            <label id="phoneLabel">bKash / Nagad Number</label>
+            <input type="text" id="accountNo" placeholder="01XXXXXXXXX" required>
+        </div>
+        <div class="input-group">
+            <label>Transaction ID / PIN (Simulated)</label>
+            <input type="password" placeholder="******" required>
+        </div>
+
+        <button type="submit" class="pay-btn">Confirm & Pay Now</button>
+        <a href="user_rooms.html" class="cancel-btn">Cancel Transaction</a>
+    </form>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room') || "Not Selected";
+    const price = params.get('price') || "৳ 0";
+
+    document.getElementById('room-name').innerText = room;
+    document.getElementById('room-price').innerText = price;
+
+    function setMethod(type, el) {
+        document.querySelectorAll('.method-item').forEach(m => m.classList.remove('active'));
+        el.classList.add('active');
+        
+        const label = document.getElementById('phoneLabel');
+        const input = document.getElementById('accountNo');
+        
+        if(type === 'Card') {
+            label.innerText = "Card Number";
+            input.placeholder = "XXXX-XXXX-XXXX-XXXX";
+        } else {
+            label.innerText = "bKash / Nagad Number";
+            input.placeholder = "01XXXXXXXXX";
+        }
+    }
+
+    document.getElementById('payForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const bookingData = {
+            room: room,
+            in: new Date().toLocaleDateString(),
+            total: price,
+            status: 'Pending'
+        };
+        let myBookings = JSON.parse(localStorage.getItem('myBookings')) || [];
+        myBookings.push(bookingData);
+        localStorage.setItem('myBookings', JSON.stringify(myBookings));
+        let adminNotifs = JSON.parse(localStorage.getItem('adminNotifications')) || [];
+        adminNotifs.push({
+            message: `New booking for ${room} from Student`,
+            time: new Date().toLocaleTimeString(),
+            isRead: false
+        });
+        localStorage.setItem('adminNotifications', JSON.stringify(adminNotifs));
+
+        alert("Payment Successful! Waiting for Admin Approval.");
+        window.location.href = 'user_rooms.html';
+    });
+</script>
+
+</body>
+</html>
