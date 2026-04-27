@@ -183,79 +183,103 @@
     </div>
 
     <script>
-        // ১. মেনু আপডেট (Student Dashboard এর সাথে কানেক্টেড)
-        function updateMenu() {
+        async function updateMenu() {
             const menuData = {
                 bf: { menu: document.getElementById('mBf').value, price: document.getElementById('pBf').value },
                 lunch: { menu: document.getElementById('mLunch').value, price: document.getElementById('pLunch').value },
                 dinner: { menu: document.getElementById('mDinner').value, price: document.getElementById('pDinner').value }
             };
-            localStorage.setItem('sharedHostelMenu', JSON.stringify(menuData));
-            alert("Success! Live Menu Updated.");
-            window.dispatchEvent(new Event('storage'));
+            const formData = new FormData();
+            formData.append('action', 'update_menu');
+            formData.append('menu_data', JSON.stringify(menuData));
+
+            try {
+                const res = await fetch('api/dashboard.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    alert("Success! Live Menu Updated.");
+                } else {
+                    alert("Error updating menu.");
+                }
+            } catch (err) {
+                alert("Error connecting to server.");
+            }
         }
 
-        // ২. ডাটা রিড এবং রেন্ডার
-        function refreshDashboard() {
-            // SOS চেক
-            const sos = localStorage.getItem('emergencyTrigger');
-            document.getElementById('sosContainer').style.display = sos === 'true' ? 'flex' : 'none';
+        async function refreshDashboard() {
+            try {
+                // SOS Check
+                const sosRes = await fetch('api/dashboard.php?action=check_sos');
+                const sosData = await sosRes.json();
+                document.getElementById('sosContainer').style.display = sosData.active ? 'flex' : 'none';
 
-            // রিকোয়েস্ট টেবিল
-            const requests = JSON.parse(localStorage.getItem('allRequests')) || [];
-            const reqTable = document.getElementById('requestTable');
-            reqTable.innerHTML = "";
+                // Requests Table
+                const reqRes = await fetch('api/dashboard.php?action=get_requests');
+                const reqData = await reqRes.json();
+                const reqTable = document.getElementById('requestTable');
+                reqTable.innerHTML = "";
+                let laundryTotal = 0;
 
-            let laundryTotal = 0;
-            requests.forEach((req, index) => {
-                if(req.type === 'Wash' || req.type === 'Iron') laundryTotal += parseInt(req.qty || 0);
+                if (reqData.status === 'success') {
+                    reqData.data.forEach((req) => {
+                        if(req.type === 'Wash' || req.type === 'Iron') laundryTotal += parseInt(req.qty || 0);
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${req.time}</td>
+                            <td>${req.user}</td>
+                            <td>${req.type}</td>
+                            <td>${req.detail}</td>
+                            <td><span class="status-badge ${req.status === 'Pending' ? 'pending' : 'done'}">${req.status}</span></td>
+                            <td>
+                                ${req.status === 'Pending' ? `<button onclick="approveReq(${req.id})" style="cursor:pointer; background:#10b981; border:none; color:black; padding:4px 8px; border-radius:5px">Done</button>` : '✅'}
+                            </td>
+                        `;
+                        reqTable.appendChild(tr);
+                    });
+                }
+                document.getElementById('laundryCount').innerText = laundryTotal;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${req.time}</td>
-                    <td>${req.user}</td>
-                    <td>${req.type}</td>
-                    <td>${req.detail}</td>
-                    <td><span class="status-badge ${req.status === 'Pending' ? 'pending' : 'done'}">${req.status}</span></td>
-                    <td>
-                        ${req.status === 'Pending' ? `<button onclick="approveReq(${index})" style="cursor:pointer; background:#10b981; border:none; color:black; padding:4px 8px; border-radius:5px">Done</button>` : '✅'}
-                    </td>
-                `;
-                reqTable.prepend(tr);
-            });
-            document.getElementById('laundryCount').innerText = laundryTotal;
-
-            // গেট পাস স্ট্যাটাস
-            const gateLogs = JSON.parse(localStorage.getItem('gatePassLogs')) || [];
-            const gateList = document.getElementById('gateList');
-            let outCount = 0;
-            gateList.innerHTML = "";
-            
-            gateLogs.forEach(log => {
-                if(log.status === 'OUT') outCount++;
-                const div = document.createElement('div');
-                div.style.padding = "5px 0; border-bottom:1px solid var(--border-glass)";
-                div.innerHTML = `<strong>${log.user}</strong> is <span style="color:${log.status==='IN'?'#10b981':'#f59e0b'}">${log.status}</span> (Since: ${log.status==='OUT'?log.leavingTime:log.enteredTime})`;
-                gateList.appendChild(div);
-            });
-            document.getElementById('outCount').innerText = outCount;
+                // Gate Passes
+                const gateRes = await fetch('api/dashboard.php?action=get_gate_passes');
+                const gateData = await gateRes.json();
+                const gateList = document.getElementById('gateList');
+                let outCount = 0;
+                gateList.innerHTML = "";
+                
+                if (gateData.status === 'success') {
+                    gateData.data.forEach(log => {
+                        if(log.status === 'OUT') outCount++;
+                        const div = document.createElement('div');
+                        div.style.padding = "5px 0; border-bottom:1px solid var(--border-glass)";
+                        div.innerHTML = `<strong>${log.user}</strong> is <span style="color:${log.status==='IN'?'#10b981':'#f59e0b'}">${log.status}</span> (Since: ${log.status==='OUT'?log.leavingTime:log.enteredTime})`;
+                        gateList.appendChild(div);
+                    });
+                }
+                document.getElementById('outCount').innerText = outCount;
+            } catch (err) {
+                console.error("Dashboard refresh error:", err);
+            }
         }
 
-        function approveReq(index) {
-            let requests = JSON.parse(localStorage.getItem('allRequests')) || [];
-            requests[index].status = 'Completed';
-            localStorage.setItem('allRequests', JSON.stringify(requests));
+        async function approveReq(id) {
+            const formData = new FormData();
+            formData.append('action', 'complete_request');
+            formData.append('id', id);
+            await fetch('api/dashboard.php', { method: 'POST', body: formData });
             refreshDashboard();
         }
 
-        function clearSOS() {
-            localStorage.setItem('emergencyTrigger', 'false');
+        async function clearSOS() {
+            const formData = new FormData();
+            formData.append('action', 'clear_sos');
+            await fetch('api/dashboard.php', { method: 'POST', body: formData });
             refreshDashboard();
         }
 
-        // রিয়েল টাইম আপডেট লিসেনার
-        window.addEventListener('storage', refreshDashboard);
-        window.onload = refreshDashboard;
+        window.onload = function() {
+            refreshDashboard();
+            setInterval(refreshDashboard, 5000); // Auto-refresh every 5s
+        };
     </script>
 </body>
 </html>

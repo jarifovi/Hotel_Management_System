@@ -256,55 +256,59 @@
         </div>
     </div>
 
-    <script>
-        // লোড হওয়ার সময় অ্যাডমিনের দেওয়া লাইভ মেনু শো করা
-        function loadLiveMenu() {
-            const adminMenu = JSON.parse(localStorage.getItem('sharedHostelMenu'));
-            if (adminMenu) {
-                document.getElementById('bfMenu').innerText = "Menu: " + adminMenu.bf.menu;
-                document.getElementById('bfSwitch').parentElement.parentElement.querySelector('p').innerText = `Breakfast (৳ ${adminMenu.bf.price})`;
-                
-                document.getElementById('lunchMenu').innerText = "Menu: " + adminMenu.lunch.menu;
-                document.getElementById('lunchSwitch').parentElement.parentElement.querySelector('p').innerText = `Lunch (৳ ${adminMenu.lunch.price})`;
+        let menuPrices = { bf: 45, lunch: 75, dinner: 85 };
 
-                document.getElementById('dinnerMenu').innerText = "Menu: " + adminMenu.dinner.menu;
-                document.getElementById('dinnerSwitch').parentElement.parentElement.querySelector('p').innerText = `Dinner (৳ ${adminMenu.dinner.price})`;
+        async function loadLiveMenu() {
+            try {
+                const res = await fetch('api/dashboard.php?action=get_menu');
+                const data = await res.json();
+                if (data.status === 'success' && data.data.bf) {
+                    const adminMenu = data.data;
+                    document.getElementById('bfMenu').innerText = "Menu: " + adminMenu.bf.menu;
+                    document.getElementById('bfSwitch').parentElement.parentElement.querySelector('p').innerText = `Breakfast (৳ ${adminMenu.bf.price})`;
+                    menuPrices.bf = adminMenu.bf.price;
+                    
+                    document.getElementById('lunchMenu').innerText = "Menu: " + adminMenu.lunch.menu;
+                    document.getElementById('lunchSwitch').parentElement.parentElement.querySelector('p').innerText = `Lunch (৳ ${adminMenu.lunch.price})`;
+                    menuPrices.lunch = adminMenu.lunch.price;
+
+                    document.getElementById('dinnerMenu').innerText = "Menu: " + adminMenu.dinner.menu;
+                    document.getElementById('dinnerSwitch').parentElement.parentElement.querySelector('p').innerText = `Dinner (৳ ${adminMenu.dinner.price})`;
+                    menuPrices.dinner = adminMenu.dinner.price;
+                }
+            } catch (err) {
+                console.error("Error loading menu:", err);
             }
         }
 
-        // ক্যালকুলেট করার সময় অ্যাডমিনের সেট করা প্রাইস নিবে
         function calculateTotal() {
-            const adminMenu = JSON.parse(localStorage.getItem('sharedHostelMenu')) || { bf:{price:45}, lunch:{price:75}, dinner:{price:85} };
             let total = 0;
-            if(document.getElementById('bfSwitch').checked) total += parseInt(adminMenu.bf.price);
-            if(document.getElementById('lunchSwitch').checked) total += parseInt(adminMenu.lunch.price);
-            if(document.getElementById('dinnerSwitch').checked) total += parseInt(adminMenu.dinner.price);
+            if(document.getElementById('bfSwitch').checked) total += parseInt(menuPrices.bf);
+            if(document.getElementById('lunchSwitch').checked) total += parseInt(menuPrices.lunch);
+            if(document.getElementById('dinnerSwitch').checked) total += parseInt(menuPrices.dinner);
             
             document.getElementById('monthlyBill').innerText = total;
 
-            // অ্যাডমিনের টোটাল বিল হিসেবের জন্য পুশ করা
             if(total > 0) {
                  sendRequestToAdmin('Meal', `Total: ৳ ${total}`, total);
             }
         }
 
-        // অ্যাডমিনের কাছে ডাটা পাঠানোর কমন ফাংশন
-        function sendRequestToAdmin(type, detail, costQty = 0) {
-            let requests = JSON.parse(localStorage.getItem('allRequests')) || [];
-            requests.push({
-                time: new Date().toLocaleTimeString(),
-                user: "Syed Rifat", // ডেমো নাম (আপনার ডেটাবেস ডাটা)
-                type: type,
-                detail: detail,
-                qty: costQty,
-                cost: costQty,
-                status: 'Pending'
-            });
-            localStorage.setItem('allRequests', JSON.stringify(requests));
-            window.dispatchEvent(new Event('storage')); 
+        async function sendRequestToAdmin(type, detail, costQty = 0) {
+            const formData = new FormData();
+            formData.append('action', 'submit_request');
+            formData.append('type', type);
+            formData.append('detail', detail);
+            formData.append('qty', costQty);
+            formData.append('cost', costQty);
+
+            try {
+                await fetch('api/dashboard.php', { method: 'POST', body: formData });
+            } catch (err) {
+                console.error("Error sending request:", err);
+            }
         }
 
-        // রিকোয়েস্ট সার্ভিস
         function requestService() {
             const time = document.getElementById('repairTime').value;
             const type = document.getElementById('serviceType').value;
@@ -313,7 +317,6 @@
             alert('Request Sent to Admin!');
         }
 
-        // লন্ড্রি রিকোয়েস্ট
         function bookLaundry(type, inputId) {
             const qty = document.getElementById(inputId).value;
             if(!qty || qty <= 0) return alert("Enter Quantity!");
@@ -321,42 +324,60 @@
             alert('Laundry Booked!');
         }
 
-        // গেট পাস ট্র্যাকিং লাইভ
-        function updateGate(status) {
-            const now = new Date().toLocaleTimeString();
-            document.getElementById('gateStatus').innerText = `STATUS: ${status}`;
-            document.getElementById('syncTime').innerText = now;
+        // Overriding the inline onclicks dynamically
+        document.querySelector('button[onclick="alert(\'Laundry pickup scheduled!\')"]').onclick = function() { bookLaundry('Wash', 'washQty'); };
+        document.querySelector('button[onclick="alert(\'Ironing pickup scheduled!\')"]').onclick = function() { bookLaundry('Iron', 'ironQty'); };
 
-            let gateLogs = JSON.parse(localStorage.getItem('gatePassLogs')) || [];
-            
-            // একই ইউজারের জন্য আপডেট বা নতুন ডাটা
-            let userRecord = gateLogs.find(log => log.user === 'Syed Rifat');
-            if(!userRecord) {
-                userRecord = { user: 'Syed Rifat', status: status, leavingTime: '--:--', enteredTime: '--:--' };
-                gateLogs.push(userRecord);
+        async function updateGate(status) {
+            const formData = new FormData();
+            formData.append('action', 'update_gate');
+            formData.append('status', status);
+
+            try {
+                const res = await fetch('api/dashboard.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const now = new Date().toLocaleTimeString();
+                    document.getElementById('gateStatus').innerText = `STATUS: ${status}`;
+                    document.getElementById('syncTime').innerText = now;
+                }
+            } catch (err) {
+                console.error("Error updating gate:", err);
             }
-            
-            userRecord.status = status;
-            if(status === 'OUT') userRecord.leavingTime = now;
-            if(status === 'IN') userRecord.enteredTime = now;
-
-            localStorage.setItem('gatePassLogs', JSON.stringify(gateLogs));
-            window.dispatchEvent(new Event('storage'));
         }
 
-        // ইমারজেন্সি এলার্ট পুশ
-        function triggerEmergency() {
+        async function triggerEmergency() {
             if(confirm("Confirm Emergency?")) {
-                localStorage.setItem('emergencyTrigger', 'true');
-                window.dispatchEvent(new Event('storage'));
-                alert("🚨 Emergency Signal Sent!");
+                const formData = new FormData();
+                formData.append('action', 'trigger_sos');
+                try {
+                    await fetch('api/dashboard.php', { method: 'POST', body: formData });
+                    alert("🚨 Emergency Signal Sent!");
+                } catch (err) {
+                    alert("Error sending emergency signal.");
+                }
+            }
+        }
+
+        async function fetchUserInfo() {
+            try {
+                const res = await fetch('api/auth.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({ action: 'check_session' })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('welcomeUser').innerText = "Welcome, " + data.name + "!";
+                }
+            } catch (err) {
+                console.error("Error fetching user info:", err);
             }
         }
 
         window.onload = function() {
+            fetchUserInfo();
             loadLiveMenu();
-        }
-        window.addEventListener('storage', loadLiveMenu);
+        };
     </script>
 </body>
 </html>

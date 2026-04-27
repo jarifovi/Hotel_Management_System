@@ -157,25 +157,30 @@
     </div>
 
     <script>
-        function loadAvailableRooms() {
-            const rooms = JSON.parse(localStorage.getItem('allRooms')) || [];
+        async function loadAvailableRooms() {
             const roomDisplay = document.getElementById('roomDisplay');
 
-            if (rooms.length === 0) {
-                roomDisplay.innerHTML = `<p style="color: var(--text-gray); grid-column: 1/-1; text-align: center; padding: 40px; border: 1px dashed var(--border-glass); border-radius: 20px;">No rooms have been added by the Admin yet.</p>`;
-                return;
-            }
+            try {
+                const res = await fetch('api/rooms.php?action=get_rooms');
+                const data = await res.json();
 
-            roomDisplay.innerHTML = rooms.map(room => `
-                <div class="room-card">
-                    <img src="${room.image || 'https://via.placeholder.com/500x300?text=No+Image'}" alt="${room.name}">
-                    <div class="room-info">
-                        <h4>${room.name}</h4>
-                        <div class="price-tag">৳ ${room.price} <small>/mo</small></div>
-                        <button class="book-btn" onclick="requestBooking('${room.name}', '৳ ${room.price}')">Confirm Booking</button>
-                    </div>
-                </div>
-            `).join('');
+                if (data.status === 'success' && data.data.length > 0) {
+                    roomDisplay.innerHTML = data.data.map(room => `
+                        <div class="room-card">
+                            <img src="${room.image || 'https://via.placeholder.com/500x300?text=No+Image'}" alt="${room.name}">
+                            <div class="room-info">
+                                <h4>${room.name} (${room.type})</h4>
+                                <div class="price-tag">৳ ${room.price} <small>/mo</small></div>
+                                <button class="book-btn" onclick="requestBooking('${room.name}', '৳ ${room.price}')">Confirm Booking</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    roomDisplay.innerHTML = `<p style="color: var(--text-gray); grid-column: 1/-1; text-align: center; padding: 40px; border: 1px dashed var(--border-glass); border-radius: 20px;">No rooms have been added by the Admin yet.</p>`;
+                }
+            } catch (err) {
+                roomDisplay.innerHTML = `<p style="color: red; grid-column: 1/-1; text-align: center; padding: 40px;">Error loading rooms.</p>`;
+            }
         }
 
         function requestBooking(roomType, price) {
@@ -183,23 +188,29 @@
             const cost = encodeURIComponent(price);
             window.location.href = `booking.html?room=${room}&price=${cost}`;
         }
-        function loadBookings() {
-            const bookings = JSON.parse(localStorage.getItem('myBookings')) || [];
+        
+        async function loadBookings() {
             const tbody = document.getElementById('bookingList');
             
-            if (bookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-gray)">No bookings found</td></tr>`;
-                return;
-            }
+            try {
+                const res = await fetch('api/bookings.php?action=get_bookings');
+                const data = await res.json();
 
-            tbody.innerHTML = bookings.map(b => `
-                <tr>
-                    <td>${b.room}</td>
-                    <td>${b.in}</td>
-                    <td style="color:var(--accent-cyan)">${b.total}</td>
-                    <td><span class="status-badge ${b.status.toLowerCase()}">${b.status}</span></td>
-                </tr>
-            `).reverse().join('');
+                if (data.status === 'success' && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(b => `
+                        <tr>
+                            <td>${b.room}</td>
+                            <td>${b.in}</td>
+                            <td style="color:var(--accent-cyan)">${b.total}</td>
+                            <td><span class="status-badge ${b.status.toLowerCase()}">${b.status}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-gray)">No bookings found</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red">Error loading bookings</td></tr>`;
+            }
         }
 
         function exportPDF() {
@@ -214,7 +225,6 @@
             doc.save("booking_history.pdf");
         }
 
-       
         window.onload = function() {
             loadAvailableRooms();
             loadBookings();

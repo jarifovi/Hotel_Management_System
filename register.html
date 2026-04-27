@@ -112,9 +112,10 @@
 </div>
 
 <script>
-    document.getElementById('registrationForm').onsubmit = function(e) {
+    document.getElementById('registrationForm').onsubmit = async function(e) {
         e.preventDefault();
 
+        const name = document.getElementById('regName').value;
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPass').value;
         const confirmPass = document.getElementById('regConfirmPass').value;
@@ -125,11 +126,29 @@
             return;
         }
 
-        const user = { email, password, role };
-        localStorage.setItem('user_' + email, JSON.stringify(user));
+        const formData = new FormData();
+        formData.append('action', 'register');
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('role', role);
 
-        alert('Registration Successful! Please Login.');
-        window.location.href = 'login.html';
+        try {
+            const res = await fetch('api/auth.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                alert('Registration Successful! Please Login.');
+                window.location.href = 'login.html';
+            } else {
+                alert(data.message || 'Registration failed');
+            }
+        } catch (err) {
+            alert("Error connecting to server.");
+        }
     };
 </script>
 </body>

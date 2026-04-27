@@ -111,64 +111,69 @@
     </div>
 
     <script>
-        function loadBookings() {
-            // ১. লোকাল স্টোরেজ থেকে ডাটা রিড করা
-            let bookings = JSON.parse(localStorage.getItem('myBookings')) || [];
+        async function loadBookings() {
             const tbody = document.getElementById('adminBookingList');
-            
             tbody.innerHTML = "";
 
-            if (bookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-gray)">No bookings submitted yet!</td></tr>`;
-                return;
-            }
+            try {
+                const res = await fetch('api/bookings.php?action=get_bookings');
+                const data = await res.json();
 
-            // ২. রিভার্স করে দেখানো যাতে লেটেস্ট বুকিং উপরে থাকে (কিন্তু সঠিক ইনডেক্স ধরে রাখা)
-            bookings.slice().reverse().forEach((b, revIdx) => {
-                const originalIdx = bookings.length - 1 - revIdx;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${b.userEmail || 'Unknown User'}</strong></td>
-                    <td>Room ${b.room}</td>
-                    <td>
-                        <span class="pay-method">
-                            <i class="fa ${b.method === 'Card Payment' ? 'fa-credit-card' : 'fa-mobile-alt'}"></i> 
-                            ${b.method || 'Not Specified'}
-                        </span>
-                    </td>
-                    <td><span class="acc-no">${b.senderNumber || 'N/A'}</span></td>
-                    <td><span class="trx-id">${b.transactionID || 'N/A'}</span></td>
-                    <td style="color:var(--accent-cyan); font-weight:bold;">${b.total}</td>
-                    <td><span class="status ${b.status.toLowerCase()}">${b.status}</span></td>
-                    <td>
-                        ${b.status === 'Pending' ? 
-                            `<button class="btn btn-app" onclick="updateStatus(${originalIdx}, 'Approved')">Approve</button>
-                             <button class="btn btn-rej" onclick="updateStatus(${originalIdx}, 'Rejected')">Reject</button>` 
-                            : `<span style="color:var(--text-gray); font-size:0.8rem;"><i class="fa fa-check-circle"></i> Done</span>`
-                        }
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // ৩. বুকিং স্ট্যাটাস আপডেট করার ফাংশন
-        function updateStatus(targetIdx, newStatus) {
-            let bookings = JSON.parse(localStorage.getItem('myBookings')) || [];
-            
-            if (bookings[targetIdx]) {
-                bookings[targetIdx].status = newStatus;
-                localStorage.setItem('myBookings', JSON.stringify(bookings));
-                
-                alert("Booking status has been updated to: " + newStatus);
-                loadBookings(); // টেবিল রিফ্রেশ করা
-            } else {
-                alert("Error: Data not found!");
+                if (data.status === 'success' && data.data.length > 0) {
+                    data.data.forEach((b) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${b.userEmail || 'Unknown User'}</strong></td>
+                            <td>${b.room}</td>
+                            <td>
+                                <span class="pay-method">
+                                    <i class="fa ${b.method.includes('Card') ? 'fa-credit-card' : 'fa-mobile-alt'}"></i> 
+                                    ${b.method || 'Not Specified'}
+                                </span>
+                            </td>
+                            <td><span class="acc-no">${b.senderNumber || 'N/A'}</span></td>
+                            <td><span class="trx-id">${b.transactionID || 'N/A'}</span></td>
+                            <td style="color:var(--accent-cyan); font-weight:bold;">${b.total}</td>
+                            <td><span class="status ${b.status.toLowerCase()}">${b.status}</span></td>
+                            <td>
+                                ${b.status === 'Pending' ? 
+                                    `<button class="btn btn-app" onclick="updateStatus(${b.id}, 'Approved')">Approve</button>
+                                     <button class="btn btn-rej" onclick="updateStatus(${b.id}, 'Rejected')">Reject</button>` 
+                                    : `<span style="color:var(--text-gray); font-size:0.8rem;"><i class="fa fa-check-circle"></i> Done</span>`
+                                }
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-gray)">No bookings submitted yet!</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:red">Error loading bookings!</td></tr>`;
             }
         }
 
-        // ৪. পেজ লোড হলে ডাটা দেখানো
+        async function updateStatus(id, newStatus) {
+            const formData = new FormData();
+            formData.append('action', 'update_status');
+            formData.append('id', id);
+            formData.append('status', newStatus);
+
+            try {
+                const res = await fetch('api/bookings.php', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    alert("Booking status has been updated to: " + newStatus);
+                    loadBookings();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch(err) {
+                alert("Error updating status.");
+            }
+        }
+
         window.onload = loadBookings;
     </script>
 </body>

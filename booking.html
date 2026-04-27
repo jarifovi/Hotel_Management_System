@@ -157,27 +157,34 @@
         }
     }
 
-    document.getElementById('payForm').addEventListener('submit', function(e) {
+    document.getElementById('payForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const bookingData = {
-            room: room,
-            in: new Date().toLocaleDateString(),
-            total: price,
-            status: 'Pending'
-        };
-        let myBookings = JSON.parse(localStorage.getItem('myBookings')) || [];
-        myBookings.push(bookingData);
-        localStorage.setItem('myBookings', JSON.stringify(myBookings));
-        let adminNotifs = JSON.parse(localStorage.getItem('adminNotifications')) || [];
-        adminNotifs.push({
-            message: `New booking for ${room} from Student`,
-            time: new Date().toLocaleTimeString(),
-            isRead: false
-        });
-        localStorage.setItem('adminNotifications', JSON.stringify(adminNotifs));
 
-        alert("Payment Successful! Waiting for Admin Approval.");
-        window.location.href = 'user_rooms.html';
+        const method = document.querySelector('.method-item.active p').innerText;
+        const accountNo = document.getElementById('accountNo').value;
+        const transactionId = document.querySelector('input[type="password"]').value;
+
+        const formData = new FormData();
+        formData.append('action', 'book_room');
+        formData.append('room', room);
+        formData.append('method', method);
+        formData.append('account_no', accountNo);
+        formData.append('transaction_id', transactionId);
+        formData.append('total', price);
+
+        try {
+            const res = await fetch('api/bookings.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                alert("Payment Successful! Waiting for Admin Approval.");
+                window.location.href = 'user_rooms.html';
+            } else {
+                alert(data.message || "Failed to submit booking.");
+            }
+        } catch (err) {
+            alert("Error connecting to server.");
+        }
     });
 </script>
 

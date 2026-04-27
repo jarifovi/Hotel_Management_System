@@ -102,21 +102,31 @@
 </div>
 
 <script>
-    document.getElementById('loginForm').onsubmit = function(e) {
+    document.getElementById('loginForm').onsubmit = async function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
+        const password = document.getElementById('loginPass').value;
 
-        const storedUser = JSON.parse(localStorage.getItem('user_' + email));
+        const formData = new FormData();
+        formData.append('action', 'login');
+        formData.append('email', email);
+        formData.append('password', password);
 
-        if (storedUser && storedUser.password === pass) {
-            if (storedUser.role === 'admin') {
-                window.location.href = 'admin_dashboard.html';
+        try {
+            const res = await fetch('api/auth.php', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                if (data.role === 'admin') {
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    window.location.href = 'user_dashboard.html';
+                }
             } else {
-                window.location.href = 'user_dashboard.html';
+                alert(data.message || "Invalid Email or Password!");
             }
-        } else {
-            alert("Invalid Email or Password! Make sure you are registered.");
+        } catch (err) {
+            alert("Error connecting to server.");
         }
     };
 </script>
