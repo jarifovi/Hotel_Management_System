@@ -3,175 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Bookings - Smart Hostel Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Manage Bookings – Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared.css">
     <style>
-        :root { 
-            --bg-dark: #0f172a; 
-            --sidebar-bg: #161e2d; 
-            --accent-cyan: #00d2ff; 
-            --text-gray: #94a3b8; 
-            --border-glass: rgba(255, 255, 255, 0.1); 
-            --card-bg: rgba(255, 255, 255, 0.05);
-        }
-        
-        body { 
-            background-color: var(--bg-dark); color: white; 
-            font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; 
-        }
-
-        /* --- Sidebar --- */
-        .sidebar { 
-            width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border-glass); 
-            padding: 30px 20px; position: fixed; height: 100vh; box-sizing: border-box; 
-        }
-        .sidebar h2 { color: var(--accent-cyan); font-size: 1.2rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li { 
-            padding: 15px; margin-bottom: 10px; border-radius: 12px; color: var(--text-gray); 
-            cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s;
-        }
-        .sidebar ul li.active { background: rgba(0, 210, 255, 0.1); color: white; border-left: 4px solid var(--accent-cyan); }
-        .sidebar ul li:hover { background: rgba(255, 255, 255, 0.05); }
-
-        /* --- Main Content --- */
-        .main-content { margin-left: 250px; padding: 40px; width: calc(100% - 250px); box-sizing: border-box; }
-        .header-area { margin-bottom: 30px; }
-        
-        .card { 
-            background: var(--card-bg); padding: 25px; border-radius: 20px; 
-            border: 1px solid var(--border-glass); overflow-x: auto;
-        }
-
-        /* --- Table Styling --- */
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { 
-            color: var(--accent-cyan); font-size: 0.75rem; text-transform: uppercase; 
-            padding: 15px; border-bottom: 2px solid var(--border-glass); text-align: left;
-        }
-        td { padding: 15px; border-bottom: 1px solid var(--border-glass); font-size: 0.85rem; }
-
-        /* Status Styling */
-        .status { padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-        .approved { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-
-        /* Payment Info Styling */
-        .pay-method { color: #e2e8f0; font-size: 0.8rem; display: block; }
-        .trx-id { color: #facc15; font-family: 'Courier New', monospace; font-size: 0.85rem; }
-        .acc-no { color: #fff; font-weight: bold; }
-
-        /* --- Buttons --- */
-        .btn { padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
-        .btn-app { background: var(--accent-cyan); color: #000; margin-right: 5px; }
-        .btn-rej { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
-        .btn-app:hover { box-shadow: 0 0 10px rgba(0, 210, 255, 0.4); }
-        .btn-rej:hover { background: #ef4444; color: white; }
-
-        .logout-btn { color: #f87171 !important; margin-top: 50px !important; }
+        table { min-width: 900px; }
+        .trx-id { font-family: 'Courier New', monospace; color: #facc15; font-size: 0.82rem; }
+        .acc-no  { font-weight: 700; color: white; }
     </style>
 </head>
 <body>
+    <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
+    <div class="sidebar-overlay" id="overlay"></div>
 
-    <div class="sidebar">
-        <h2>SMART HOSTEL</h2>
-        <ul>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏨</div>
+            <div class="logo-text">Smart<span>Hostel</span></div>
+        </div>
+        <nav><ul>
             <li onclick="location.href='admin_dashboard.html'"><i class="fa fa-th-large"></i> Dashboard</li>
             <li onclick="location.href='manage_rooms.html'"><i class="fa fa-bed"></i> Manage Rooms</li>
             <li class="active"><i class="fa fa-clipboard-list"></i> Manage Bookings</li>
-            <li class="logout-btn" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
-        </ul>
+            <li class="logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+        </ul></nav>
     </div>
 
     <div class="main-content">
-        <div class="header-area">
-            <h1>Booking Verification</h1>
-            <p style="color: var(--text-gray)">Verify transaction IDs and approve student room requests.</p>
+        <div class="page-header">
+            <h1>📋 Booking Verification</h1>
+            <p>Verify transaction IDs and approve or reject student room requests.</p>
         </div>
 
-        <div class="card">
+        <div class="table-wrap">
+            <div class="panel-title"><i class="fa fa-list-check"></i> All Booking Requests</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Student Email</th>
+                        <th>Student</th>
                         <th>Room</th>
                         <th>Payment Method</th>
-                        <th>Number / Card</th>
-                        <th>Transaction ID / PIN</th>
+                        <th>Account / Card</th>
+                        <th>Transaction ID</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="adminBookingList">
-                    </tbody>
+                    <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:50px">Loading bookings…</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
+        const ham = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        ham.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
         async function loadBookings() {
             const tbody = document.getElementById('adminBookingList');
-            tbody.innerHTML = "";
-
+            tbody.innerHTML = '';
             try {
-                const res = await fetch('api/bookings.php?action=get_bookings');
+                const res  = await fetch('api/bookings.php?action=get_bookings');
                 const data = await res.json();
-
                 if (data.status === 'success' && data.data.length > 0) {
-                    data.data.forEach((b) => {
+                    data.data.forEach(b => {
+                        const statusClass = b.status === 'Pending' ? 'badge-pending' : b.status === 'Approved' ? 'badge-approved' : 'badge-rejected';
+                        const icon = b.method && b.method.includes('Card') ? 'fa-credit-card' : 'fa-mobile-alt';
+                        const actions = b.status === 'Pending'
+                            ? `<button class="btn btn-success btn-sm" onclick="updateStatus(${b.id},'Approved')"><i class="fa fa-check"></i> Approve</button>
+                               <button class="btn btn-danger  btn-sm" onclick="updateStatus(${b.id},'Rejected')" style="margin-top:5px"><i class="fa fa-times"></i> Reject</button>`
+                            : `<span class="badge ${statusClass}">✓ Done</span>`;
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td><strong>${b.userEmail || 'Unknown User'}</strong></td>
-                            <td>${b.room}</td>
-                            <td>
-                                <span class="pay-method">
-                                    <i class="fa ${b.method.includes('Card') ? 'fa-credit-card' : 'fa-mobile-alt'}"></i> 
-                                    ${b.method || 'Not Specified'}
-                                </span>
-                            </td>
+                            <td><strong>${b.userEmail || 'Unknown'}</strong></td>
+                            <td><span class="badge badge-cyan">${b.room}</span></td>
+                            <td><i class="fa ${icon}" style="color:var(--cyan)"></i> ${b.method || 'N/A'}</td>
                             <td><span class="acc-no">${b.senderNumber || 'N/A'}</span></td>
                             <td><span class="trx-id">${b.transactionID || 'N/A'}</span></td>
-                            <td style="color:var(--accent-cyan); font-weight:bold;">${b.total}</td>
-                            <td><span class="status ${b.status.toLowerCase()}">${b.status}</span></td>
-                            <td>
-                                ${b.status === 'Pending' ? 
-                                    `<button class="btn btn-app" onclick="updateStatus(${b.id}, 'Approved')">Approve</button>
-                                     <button class="btn btn-rej" onclick="updateStatus(${b.id}, 'Rejected')">Reject</button>` 
-                                    : `<span style="color:var(--text-gray); font-size:0.8rem;"><i class="fa fa-check-circle"></i> Done</span>`
-                                }
-                            </td>
+                            <td style="color:var(--cyan);font-weight:700">${b.total}</td>
+                            <td><span class="badge ${statusClass}">${b.status}</span></td>
+                            <td>${actions}</td>
                         `;
                         tbody.appendChild(tr);
                     });
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-gray)">No bookings submitted yet!</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:50px">No bookings submitted yet.</td></tr>`;
                 }
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:40px; color:red">Error loading bookings!</td></tr>`;
+            } catch {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--red);padding:50px">Error loading bookings.</td></tr>`;
             }
         }
 
         async function updateStatus(id, newStatus) {
-            const formData = new FormData();
-            formData.append('action', 'update_status');
-            formData.append('id', id);
-            formData.append('status', newStatus);
-
+            const fd = new FormData();
+            fd.append('action','update_status'); fd.append('id', id); fd.append('status', newStatus);
             try {
-                const res = await fetch('api/bookings.php', { method: 'POST', body: formData });
+                const res  = await fetch('api/bookings.php', { method: 'POST', body: fd });
                 const data = await res.json();
-                
-                if (data.status === 'success') {
-                    alert("Booking status has been updated to: " + newStatus);
-                    loadBookings();
-                } else {
-                    alert("Error: " + data.message);
-                }
-            } catch(err) {
-                alert("Error updating status.");
-            }
+                if (data.status === 'success') loadBookings();
+                else alert('Error: ' + data.message);
+            } catch { alert('Connection error.'); }
         }
 
         window.onload = loadBookings;

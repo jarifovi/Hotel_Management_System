@@ -3,283 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Smart Hostel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Admin Dashboard – SmartHostel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared.css">
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --sidebar-bg: #161e2d;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --accent-cyan: #00d2ff;
-            --accent-purple: #7e22ce;
-            --accent-red: #ef4444;
-            --text-gray: #94a3b8;
-            --border-glass: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            background-color: var(--bg-dark); color: white;
-            font-family: 'Segoe UI', sans-serif; margin: 0; display: flex;
-            min-height: 100vh;
-        }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 250px; background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-glass); padding: 30px 20px;
-            position: fixed; height: 100vh; box-sizing: border-box; z-index: 100;
-        }
-        .sidebar h2 { color: var(--accent-cyan); font-size: 1.4rem; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 2px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li {
-            padding: 15px; margin-bottom: 10px; border-radius: 12px;
-            cursor: pointer; color: var(--text-gray); display: flex; align-items: center; gap: 15px; transition: 0.3s;
-        }
-        .sidebar ul li.active, .sidebar ul li:hover { background: rgba(0, 210, 255, 0.1); color: white; border-left: 4px solid var(--accent-cyan); }
-        .btn-logout { color: #f87171 !important; margin-top: 50px !important; }
-
-        .main-content { margin-left: 250px; padding: 40px; width: calc(100% - 250px); box-sizing: border-box; }
-
-        .welcome-box {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-            padding: 35px; border-radius: 24px; margin-bottom: 35px;
-        }
-
-        /* --- Dashboard Grid --- */
-        .dashboard-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px; margin-bottom: 40px;
-        }
-
-        .glass-panel {
-            background: var(--card-bg); border: 1px solid var(--border-glass);
-            padding: 25px; border-radius: 24px; backdrop-filter: blur(10px);
-        }
-
-        .panel-title {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; border-bottom: 1px solid var(--border-glass); padding-bottom: 10px;
-        }
-        .panel-title h3 { margin: 0; font-size: 1.1rem; color: var(--accent-cyan); }
-
-        /* --- SOS Alert --- */
-        .sos-alert {
-            background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red);
-            padding: 15px; border-radius: 15px; margin-bottom: 25px;
-            display: none; justify-content: space-between; align-items: center;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-
-        /* --- Stats Card --- */
-        .stat-card { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; text-align: center; }
-        .stat-card h2 { margin: 5px 0; color: var(--accent-cyan); }
-
-        /* --- Tables --- */
-        .table-container {
-            background: var(--card-bg); padding: 25px; border-radius: 24px;
-            border: 1px solid var(--border-glass); overflow-x: auto;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-glass); }
-        th { color: var(--text-gray); font-size: 0.85rem; text-transform: uppercase; }
-        
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        .pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-
-        input[type="text"], input[type="number"] {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass);
-            color: white; padding: 8px; border-radius: 8px; width: 100%; margin-bottom: 10px;
-        }
-        .btn-action {
-            background: var(--accent-cyan); border: none; color: #000;
-            padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;
+        .menu-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .menu-row .input-3d:last-child { width: 90px; flex-shrink: 0; }
+        .gate-entry {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; background: var(--surface2);
+            border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
+    <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
+    <div class="sidebar-overlay" id="overlay"></div>
 
-    <div class="sidebar">
-        <h2>SMART HOSTEL</h2>
-        <ul>
-            <li class="active"><i class="fa fa-home"></i> Dashboard</li>
-            <li onclick="location.href='manage_rooms.html'"><i class="fa fa-bed"></i> Manage Rooms</li>
-            <li onclick="location.href='manage_bookings.html'"><i class="fa fa-clipboard-list"></i> Manage Bookings</li>
-            <li class="btn-logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
-        </ul>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏨</div>
+            <div class="logo-text">Smart<span>Hostel</span></div>
+        </div>
+        <nav>
+            <ul>
+                <li class="active"><i class="fa fa-th-large"></i> Dashboard</li>
+                <li onclick="location.href='manage_rooms.html'"><i class="fa fa-bed"></i> Manage Rooms</li>
+                <li onclick="location.href='manage_bookings.html'"><i class="fa fa-clipboard-list"></i> Manage Bookings</li>
+                <li class="logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+            </ul>
+        </nav>
     </div>
 
     <div class="main-content">
-        <div class="welcome-box">
-            <h1>Admin Control Overview</h1>
+        <div class="welcome-banner">
+            <h1>Admin <span class="accent">Control Center</span> 🎛️</h1>
+            <p>Manage meals, requests, gate passes, and monitor emergencies in real-time.</p>
         </div>
 
+        <!-- SOS Alert -->
         <div id="sosContainer" class="sos-alert">
-            <span>🚨 <strong>EMERGENCY SIGNAL:</strong> A student needs immediate assistance!</span>
-            <button onclick="clearSOS()" style="background:var(--accent-red); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Dismiss</button>
+            <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:1.6rem;animation:sosPulse 1s infinite">🚨</span>
+                <div>
+                    <strong style="color:#ef4444">EMERGENCY SIGNAL</strong>
+                    <div style="font-size:0.85rem;color:#94a3b8;margin-top:2px">A student needs immediate assistance!</div>
+                </div>
+            </div>
+            <button onclick="clearSOS()" class="btn btn-danger btn-sm">Dismiss</button>
+        </div>
+
+        <!-- Stats Row -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px;margin-bottom:28px">
+            <div class="stat-card">
+                <div class="stat-num" id="laundryCount">0</div>
+                <div class="stat-label"><i class="fa fa-tshirt"></i> Laundry Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="outCount">0</div>
+                <div class="stat-label"><i class="fa fa-door-open"></i> Active Gate Pass</div>
+            </div>
         </div>
 
         <div class="dashboard-grid">
+            <!-- Meal Menu -->
             <div class="glass-panel">
-                <div class="panel-title"><h3><i class="fa fa-utensils"></i> Update Meal Menu</h3></div>
-                <label>Breakfast Menu & Price</label>
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="mBf" value="Khichuri & Egg">
-                    <input type="number" id="pBf" value="45" style="width:80px">
+                <div class="panel-title"><i class="fa fa-utensils"></i> Update Live Meal Menu</div>
+                <label class="field-label">🌅 Breakfast</label>
+                <div class="menu-row">
+                    <input type="text" id="mBf" class="input-3d" value="Khichuri &amp; Egg" placeholder="Menu item">
+                    <input type="number" id="pBf" class="input-3d" value="45" placeholder="৳">
                 </div>
-                <label>Lunch Menu & Price</label>
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="mLunch" value="Rice, Fish Curry, Dal">
-                    <input type="number" id="pLunch" value="75" style="width:80px">
+                <label class="field-label">☀️ Lunch</label>
+                <div class="menu-row">
+                    <input type="text" id="mLunch" class="input-3d" value="Rice, Fish Curry, Dal" placeholder="Menu item">
+                    <input type="number" id="pLunch" class="input-3d" value="75" placeholder="৳">
                 </div>
-                <label>Dinner Menu & Price</label>
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="mDinner" value="Rice, Chicken & Vorta">
-                    <input type="number" id="pDinner" value="85" style="width:80px">
+                <label class="field-label">🌙 Dinner</label>
+                <div class="menu-row">
+                    <input type="text" id="mDinner" class="input-3d" value="Rice, Chicken &amp; Vorta" placeholder="Menu item">
+                    <input type="number" id="pDinner" class="input-3d" value="85" placeholder="৳">
                 </div>
-                <button class="btn-action" onclick="updateMenu()">Update Live Menu</button>
+                <button class="btn btn-primary" style="margin-top:8px" onclick="updateMenu()">
+                    <i class="fa fa-paper-plane"></i> Push Live Menu
+                </button>
             </div>
 
+            <!-- Gate Status -->
             <div class="glass-panel">
-                <div class="panel-title"><h3><i class="fa fa-chart-line"></i> Quick Stats</h3></div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                    <div class="stat-card">
-                        <small>Laundry Items</small>
-                        <h2 id="laundryCount">0</h2>
-                    </div>
-                    <div class="stat-card">
-                        <small>Active Gate Pass</small>
-                        <h2 id="outCount">0</h2>
-                    </div>
+                <div class="panel-title"><i class="fa fa-door-open"></i> Gate Pass Status</div>
+                <div id="gateList" style="max-height:220px;overflow-y:auto">
+                    <div style="color:var(--muted);text-align:center;padding:30px;font-size:0.9rem">No gate activity yet.</div>
                 </div>
-                <div class="panel-title" style="margin-top:20px"><h3><i class="fa fa-door-open"></i> Gate Status</h3></div>
-                <div id="gateList" style="max-height: 120px; overflow-y: auto; font-size: 0.9rem;">
-                    </div>
             </div>
         </div>
 
-        <div class="table-container">
-            <div class="panel-title"><h3><i class="fa fa-tasks"></i> Service & Maintenance Requests</h3></div>
+        <!-- Requests Table -->
+        <div class="table-wrap">
+            <div class="panel-title"><i class="fa fa-tasks"></i> Service &amp; Maintenance Requests</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Student</th>
-                        <th>Service Type</th>
-                        <th>Detail/Qty</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th>Time</th><th>Student</th><th>Type</th><th>Detail</th><th>Status</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="requestTable">
-                    </tbody>
+                    <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">Loading requests…</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
+        // Sidebar toggle
+        const ham = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        ham.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
         async function updateMenu() {
             const menuData = {
-                bf: { menu: document.getElementById('mBf').value, price: document.getElementById('pBf').value },
-                lunch: { menu: document.getElementById('mLunch').value, price: document.getElementById('pLunch').value },
+                bf:     { menu: document.getElementById('mBf').value,     price: document.getElementById('pBf').value },
+                lunch:  { menu: document.getElementById('mLunch').value,  price: document.getElementById('pLunch').value },
                 dinner: { menu: document.getElementById('mDinner').value, price: document.getElementById('pDinner').value }
             };
-            const formData = new FormData();
-            formData.append('action', 'update_menu');
-            formData.append('menu_data', JSON.stringify(menuData));
-
+            const fd = new FormData();
+            fd.append('action', 'update_menu');
+            fd.append('menu_data', JSON.stringify(menuData));
             try {
-                const res = await fetch('api/dashboard.php', { method: 'POST', body: formData });
+                const res  = await fetch('api/dashboard.php', { method: 'POST', body: fd });
                 const data = await res.json();
-                if (data.status === 'success') {
-                    alert("Success! Live Menu Updated.");
-                } else {
-                    alert("Error updating menu.");
-                }
-            } catch (err) {
-                alert("Error connecting to server.");
-            }
+                if (data.status === 'success') alert('✅ Live Menu Updated!');
+                else alert('Error: ' + data.message);
+            } catch { alert('Connection error.'); }
         }
 
         async function refreshDashboard() {
             try {
-                // SOS Check
-                const sosRes = await fetch('api/dashboard.php?action=check_sos');
-                const sosData = await sosRes.json();
-                document.getElementById('sosContainer').style.display = sosData.active ? 'flex' : 'none';
+                const [sosD, reqD, gateD] = await Promise.all([
+                    fetch('api/dashboard.php?action=check_sos').then(r => r.json()),
+                    fetch('api/dashboard.php?action=get_requests').then(r => r.json()),
+                    fetch('api/dashboard.php?action=get_gate_passes').then(r => r.json())
+                ]);
 
-                // Requests Table
-                const reqRes = await fetch('api/dashboard.php?action=get_requests');
-                const reqData = await reqRes.json();
-                const reqTable = document.getElementById('requestTable');
-                reqTable.innerHTML = "";
-                let laundryTotal = 0;
+                // SOS
+                document.getElementById('sosContainer').style.display = sosD.active ? 'flex' : 'none';
 
-                if (reqData.status === 'success') {
-                    reqData.data.forEach((req) => {
-                        if(req.type === 'Wash' || req.type === 'Iron') laundryTotal += parseInt(req.qty || 0);
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${req.time}</td>
-                            <td>${req.user}</td>
-                            <td>${req.type}</td>
+                // Requests
+                const tb = document.getElementById('requestTable');
+                let laundry = 0;
+                if (reqD.status === 'success' && reqD.data.length > 0) {
+                    tb.innerHTML = reqD.data.map(req => {
+                        if (req.type === 'Wash' || req.type === 'Iron') laundry += parseInt(req.qty || 0);
+                        const badge = req.status === 'Pending' ? 'badge-pending' : 'badge-done';
+                        const action = req.status === 'Pending'
+                            ? `<button class="btn btn-success btn-sm" onclick="approveReq(${req.id})"><i class="fa fa-check"></i> Done</button>`
+                            : `<span class="badge badge-done">✓ Resolved</span>`;
+                        return `<tr>
+                            <td style="color:var(--muted);font-size:0.82rem">${req.time}</td>
+                            <td><strong>${req.user}</strong></td>
+                            <td><span class="badge badge-cyan">${req.type}</span></td>
                             <td>${req.detail}</td>
-                            <td><span class="status-badge ${req.status === 'Pending' ? 'pending' : 'done'}">${req.status}</span></td>
-                            <td>
-                                ${req.status === 'Pending' ? `<button onclick="approveReq(${req.id})" style="cursor:pointer; background:#10b981; border:none; color:black; padding:4px 8px; border-radius:5px">Done</button>` : '✅'}
-                            </td>
-                        `;
-                        reqTable.appendChild(tr);
-                    });
+                            <td><span class="badge ${badge}">${req.status}</span></td>
+                            <td>${action}</td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No requests yet.</td></tr>`;
                 }
-                document.getElementById('laundryCount').innerText = laundryTotal;
+                document.getElementById('laundryCount').innerText = laundry;
 
-                // Gate Passes
-                const gateRes = await fetch('api/dashboard.php?action=get_gate_passes');
-                const gateData = await gateRes.json();
-                const gateList = document.getElementById('gateList');
+                // Gate
+                const gl = document.getElementById('gateList');
                 let outCount = 0;
-                gateList.innerHTML = "";
-                
-                if (gateData.status === 'success') {
-                    gateData.data.forEach(log => {
-                        if(log.status === 'OUT') outCount++;
-                        const div = document.createElement('div');
-                        div.style.padding = "5px 0; border-bottom:1px solid var(--border-glass)";
-                        div.innerHTML = `<strong>${log.user}</strong> is <span style="color:${log.status==='IN'?'#10b981':'#f59e0b'}">${log.status}</span> (Since: ${log.status==='OUT'?log.leavingTime:log.enteredTime})`;
-                        gateList.appendChild(div);
-                    });
+                if (gateD.status === 'success' && gateD.data.length > 0) {
+                    gl.innerHTML = gateD.data.map(log => {
+                        if (log.status === 'OUT') outCount++;
+                        const col = log.status === 'IN' ? '#10b981' : '#f59e0b';
+                        const time = log.status === 'OUT' ? log.leavingTime : log.enteredTime;
+                        return `<div class="gate-entry">
+                            <strong>${log.user}</strong>
+                            <span style="color:${col};font-weight:700">${log.status}</span>
+                            <span style="color:var(--muted);font-size:0.8rem">${time}</span>
+                        </div>`;
+                    }).join('');
+                } else {
+                    gl.innerHTML = `<div style="color:var(--muted);text-align:center;padding:30px;font-size:0.9rem">No gate activity yet.</div>`;
                 }
                 document.getElementById('outCount').innerText = outCount;
-            } catch (err) {
-                console.error("Dashboard refresh error:", err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         async function approveReq(id) {
-            const formData = new FormData();
-            formData.append('action', 'complete_request');
-            formData.append('id', id);
-            await fetch('api/dashboard.php', { method: 'POST', body: formData });
+            const fd = new FormData(); fd.append('action','complete_request'); fd.append('id', id);
+            await fetch('api/dashboard.php', { method: 'POST', body: fd });
             refreshDashboard();
         }
 
         async function clearSOS() {
-            const formData = new FormData();
-            formData.append('action', 'clear_sos');
-            await fetch('api/dashboard.php', { method: 'POST', body: formData });
+            const fd = new FormData(); fd.append('action','clear_sos');
+            await fetch('api/dashboard.php', { method: 'POST', body: fd });
             refreshDashboard();
         }
 
-        window.onload = function() {
-            refreshDashboard();
-            setInterval(refreshDashboard, 5000); // Auto-refresh every 5s
-        };
+        window.onload = () => { refreshDashboard(); setInterval(refreshDashboard, 5000); };
     </script>
 </body>
 </html>

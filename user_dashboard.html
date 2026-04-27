@@ -3,382 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Hostel - Student Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Student Dashboard – SmartHostel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="shared.css">
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --sidebar-bg: #161e2d;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --accent-cyan: #00d2ff;
-            --accent-purple: #7e22ce;
-            --accent-red: #ef4444;
-            --text-gray: #94a3b8;
-            --border-glass: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            background-color: var(--bg-dark); color: white;
-            font-family: 'Segoe UI', sans-serif; margin: 0; display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 250px; background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-glass); padding: 30px 20px;
-            position: fixed; height: 100vh; box-sizing: border-box; z-index: 100;
-        }
-        .sidebar h2 { color: var(--accent-cyan); font-size: 1.4rem; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 2px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li {
-            padding: 15px; margin-bottom: 10px; border-radius: 12px;
-            cursor: pointer; color: var(--text-gray); display: flex; align-items: center; gap: 15px; transition: 0.3s;
-        }
-        .sidebar ul li.active, .sidebar ul li:hover { background: rgba(0, 210, 255, 0.1); color: white; border-left: 4px solid var(--accent-cyan); }
-        .btn-logout { color: #f87171 !important; margin-top: 50px !important; }
-
-        .main-content { margin-left: 250px; padding: 40px; width: calc(100% - 250px); box-sizing: border-box; }
-
-        .welcome-box {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-            padding: 35px; border-radius: 24px; margin-bottom: 35px;
-            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.2);
-        }
-
-        /* --- Custom Features Grid --- */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .glass-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--border-glass);
-            padding: 25px;
-            border-radius: 24px;
-            backdrop-filter: blur(10px);
-        }
-
-        .panel-title {
+        /* Meal Cards */
+        .meal-item {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; border-bottom: 1px solid var(--border-glass);
-            padding-bottom: 10px;
+            background: var(--surface2); border-radius: 14px; padding: 14px 18px;
+            margin-bottom: 12px;
+            box-shadow: 5px 5px 14px rgba(0,0,0,0.4), -3px -3px 8px rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
         }
-        .panel-title h3 { margin: 0; font-size: 1.1rem; color: var(--accent-cyan); }
+        .meal-item:hover { border-color: rgba(0,210,255,0.2); }
+        .meal-info p { margin: 0; font-weight: 700; font-size: 0.95rem; }
+        .meal-info small { color: var(--muted); font-size: 0.82rem; }
+        .bill-badge {
+            font-size: 1.4rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-        /* --- Meal Section --- */
-        .meal-card {
-            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px;
-            margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+        /* Toggle Switch */
+        .toggle { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: #1a2540; border-radius: 34px; transition: .35s;
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.5);
         }
-        .meal-info p { margin: 0; font-weight: bold; }
-        .meal-info small { color: var(--text-gray); }
-        .bill-highlight { font-size: 1.2rem; font-weight: bold; color: var(--accent-cyan); }
+        .toggle-slider::before {
+            content: ''; position: absolute; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .35s;
+        }
+        .toggle input:checked + .toggle-slider { background: rgba(0,210,255,0.25); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(22px); background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
-        /* --- Service Section --- */
-        .service-item { margin-bottom: 15px; }
-        .service-item label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-gray); }
-        .service-input-group { display: flex; gap: 10px; }
-        input[type="time"], input[type="number"] {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass);
-            color: white; padding: 8px; border-radius: 8px; flex-grow: 1;
-        }
-        .btn-action {
-            background: var(--accent-cyan); border: none; color: #000;
-            padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
-        }
-        .btn-action:hover { opacity: 0.8; }
+        /* Service Row */
+        .svc-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 8px; }
+        .svc-row .input-3d { flex: 1; }
+        .svc-row .btn { flex-shrink: 0; padding: 13px 16px; }
 
-        /* --- Emergency Button --- */
-        .btn-emergency {
-            background: var(--accent-red); color: white; border: none;
-            width: 100%; padding: 20px; border-radius: 15px; font-size: 1.2rem;
-            font-weight: 800; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 15px; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-            margin-top: 20px; transition: 0.3s;
+        /* Gate Status */
+        .gate-status-display {
+            font-size: 1.6rem; font-weight: 800; text-align: center;
+            padding: 16px; border-radius: 16px; margin-bottom: 16px;
+            background: var(--surface2);
+            box-shadow: var(--shadow-card);
         }
-        .btn-emergency:hover { transform: scale(1.02); background: #dc2626; }
+        .gate-status-display.inside { color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+        .gate-status-display.outside { color: var(--orange); border: 1px solid rgba(245,158,11,0.25); }
+        .gate-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        /* --- Gate Pass Tracker --- */
-        .tracker-box { text-align: center; padding: 10px; }
-        .gate-status { font-size: 1.5rem; margin: 10px 0; color: #10b981; }
-
-        /* --- Switch Styling --- */
-        .switch { position: relative; display: inline-block; width: 45px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #334155; transition: .4s; border-radius: 34px;
+        /* Emergency */
+        .btn-sos {
+            width: 100%; padding: 18px; margin-top: 16px; border: none; border-radius: 16px;
+            background: linear-gradient(145deg, #7f1d1d, var(--red));
+            color: white; font-size: 1.1rem; font-weight: 800; cursor: pointer; font-family: inherit;
+            box-shadow: 6px 6px 18px rgba(0,0,0,0.5), 0 0 20px rgba(239,68,68,0.3);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: all 0.2s; animation: sosGlow 2s ease-in-out infinite;
         }
-        .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
+        @keyframes sosGlow {
+            0%, 100% { box-shadow: 6px 6px 18px rgba(0,0,0,0.5), 0 0 15px rgba(239,68,68,0.25); }
+            50%       { box-shadow: 6px 6px 18px rgba(0,0,0,0.5), 0 0 35px rgba(239,68,68,0.5); }
         }
-        input:checked + .slider { background-color: var(--accent-cyan); }
-        input:checked + .slider:before { transform: translateX(23px); }
+        .btn-sos:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-sos:active { transform: translateY(2px); animation: none; }
     </style>
 </head>
 <body>
+    <button class="hamburger" id="hamburger"><i class="fa fa-bars"></i></button>
+    <div class="sidebar-overlay" id="overlay"></div>
 
-    <div class="sidebar">
-        <h2>SMART HOSTEL</h2>
-        <ul>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏨</div>
+            <div class="logo-text">Smart<span>Hostel</span></div>
+        </div>
+        <nav><ul>
             <li class="active"><i class="fa fa-home"></i> Dashboard</li>
             <li onclick="location.href='user_rooms.html'"><i class="fa fa-bed"></i> Book a Room</li>
             <li onclick="location.href='user_profile.html'"><i class="fa fa-user"></i> My Profile</li>
-            <li class="btn-logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
-        </ul>
+            <li class="logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+        </ul></nav>
     </div>
 
     <div class="main-content">
-        <div class="welcome-box">
-            <h1 id="welcomeUser">Welcome, Student!</h1>
-            <p>Manage your meals, services, and security from one dashboard.</p>
+        <div class="welcome-banner">
+            <h1 id="welcomeUser">Welcome, <span class="accent">Student!</span> 👋</h1>
+            <p>Manage your meals, services, and hostel security from one central dashboard.</p>
         </div>
 
         <div class="dashboard-grid">
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <h3><i class="fa fa-utensils"></i> Weekly Meal Menu</h3>
-                    <div class="bill-highlight">৳ <span id="monthlyBill">0</span></div>
-                </div>
-                <div id="mealList">
-                    <div class="meal-card">
-                        <div class="meal-info">
-                            <p>Breakfast (৳ 45)</p>
-                            <small id="bfMenu">Menu: Khichuri & Egg</small>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="bfSwitch" onchange="calculateTotal()">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="meal-card">
-                        <div class="meal-info">
-                            <p>Lunch (৳ 75)</p>
-                            <small id="lunchMenu">Menu: Rice, Fish Curry, Dal</small>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="lunchSwitch" onchange="calculateTotal()">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="meal-card">
-                        <div class="meal-info">
-                            <p>Dinner (৳ 85)</p>
-                            <small id="dinnerMenu">Menu: Rice, Chicken & Vorta</small>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="dinnerSwitch" onchange="calculateTotal()">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <button class="btn-action" style="width:100%; margin-top:10px" onclick="alert('PDF Bill Generated!')">Download Weekly PDF Bill</button>
-            </div>
 
+            <!-- Meal Menu Panel -->
             <div class="glass-panel">
                 <div class="panel-title">
-                    <h3><i class="fa fa-tools"></i> Maintenance & Utility</h3>
+                    <span><i class="fa fa-utensils"></i> Weekly Meal Menu</span>
+                    <div>৳ <span class="bill-badge" id="monthlyBill">0</span></div>
                 </div>
-                <div class="service-item">
-                    <label>Cleaning / Repairs (Select Time)</label>
-                    <div class="service-input-group">
-                        <input type="time" id="repairTime">
-                        <select id="serviceType" style="background:rgba(0,0,0,0.3); color:white; border-radius:8px; border:1px solid var(--border-glass)">
-                            <option value="Cleaning">Cleaning</option>
-                            <option value="Electrician">Electrician</option>
-                            <option value="Plumber">Plumber</option>
-                        </select>
-                        <button class="btn-action" onclick="requestService()">Request</button>
+
+                <div class="meal-item">
+                    <div class="meal-info">
+                        <p id="bfLabel">Breakfast (৳ 45)</p>
+                        <small id="bfMenu">Menu: Loading…</small>
                     </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="bfSwitch" onchange="calculateTotal()">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
-                <div class="service-item">
-                    <label>Generator Support (Immediate/Scheduled)</label>
-                    <div class="service-input-group">
-                        <input type="time" id="genTime" value="00:00">
-                        <button class="btn-action" onclick="alert('Generator request sent!')">Call Gen</button>
+
+                <div class="meal-item">
+                    <div class="meal-info">
+                        <p id="lunchLabel">Lunch (৳ 75)</p>
+                        <small id="lunchMenu">Menu: Loading…</small>
                     </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="lunchSwitch" onchange="calculateTotal()">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
-                <button class="btn-emergency" onclick="triggerEmergency()">
-                    <i class="fa fa-ambulance"></i> EMERGENCY HELP
+
+                <div class="meal-item">
+                    <div class="meal-info">
+                        <p id="dinnerLabel">Dinner (৳ 85)</p>
+                        <small id="dinnerMenu">Menu: Loading…</small>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="dinnerSwitch" onchange="calculateTotal()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <button class="btn btn-primary" style="margin-top:14px" onclick="alert('PDF Bill Generated!')">
+                    <i class="fa fa-file-pdf"></i> Download Bill PDF
                 </button>
             </div>
 
+            <!-- Services Panel -->
             <div class="glass-panel">
-                <div class="panel-title">
-                    <h3><i class="fa fa-tshirt"></i> Laundry Service</h3>
+                <div class="panel-title"><i class="fa fa-tools"></i> Maintenance &amp; Utility</div>
+
+                <div class="field-group">
+                    <label class="field-label">Service Type</label>
+                    <select id="serviceType" class="input-3d">
+                        <option value="Cleaning">Cleaning</option>
+                        <option value="Electrician">Electrician</option>
+                        <option value="Plumber">Plumber</option>
+                    </select>
                 </div>
-                <div class="service-item">
-                    <label>Cloth Washing (Quantity)</label>
-                    <div class="service-input-group">
-                        <input type="number" placeholder="Pcs" id="washQty">
-                        <button class="btn-action" onclick="alert('Laundry pickup scheduled!')">Book Wash</button>
-                    </div>
-                </div>
-                <div class="service-item">
-                    <label>Cloth Iron (Quantity)</label>
-                    <div class="service-input-group">
-                        <input type="number" placeholder="Pcs" id="ironQty">
-                        <button class="btn-action" onclick="alert('Ironing pickup scheduled!')">Book Iron</button>
+                <div class="field-group">
+                    <label class="field-label">Preferred Time</label>
+                    <div class="svc-row">
+                        <input type="time" id="repairTime" class="input-3d">
+                        <button class="btn btn-success" onclick="requestService()"><i class="fa fa-paper-plane"></i> Request</button>
                     </div>
                 </div>
 
-                <div class="panel-title" style="margin-top:25px">
-                    <h3><i class="fa fa-door-open"></i> Gate Pass Tracking</h3>
-                </div>
-                <div class="tracker-box">
-                    <div class="gate-status" id="gateStatus">STATUS: INSIDE</div>
-                    <div class="service-input-group">
-                        <button class="btn-action" style="background:#f59e0b" onclick="updateGate('OUT')">Leaving Hostel</button>
-                        <button class="btn-action" style="background:#10b981" onclick="updateGate('IN')">Entered Hostel</button>
+                <div class="panel-title" style="margin-top:20px"><i class="fa fa-tshirt"></i> Laundry Service</div>
+                <div class="field-group">
+                    <label class="field-label">Cloth Washing (pieces)</label>
+                    <div class="svc-row">
+                        <input type="number" id="washQty" class="input-3d" placeholder="Qty">
+                        <button class="btn btn-success" onclick="bookLaundry('Wash','washQty')"><i class="fa fa-water"></i> Book</button>
                     </div>
-                    <p style="font-size:0.8rem; color:var(--text-gray); margin-top:10px">Last Sync: <span id="syncTime">--:--</span></p>
                 </div>
+                <div class="field-group">
+                    <label class="field-label">Cloth Ironing (pieces)</label>
+                    <div class="svc-row">
+                        <input type="number" id="ironQty" class="input-3d" placeholder="Qty">
+                        <button class="btn btn-success" onclick="bookLaundry('Iron','ironQty')"><i class="fa fa-fire"></i> Book</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gate Pass & SOS -->
+            <div class="glass-panel">
+                <div class="panel-title"><i class="fa fa-door-open"></i> Gate Pass Tracking</div>
+                <div class="gate-status-display inside" id="gateStatus">🏠 STATUS: INSIDE</div>
+                <p style="font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:14px">
+                    Last updated: <span id="syncTime">--:--</span>
+                </p>
+                <div class="gate-btns">
+                    <button class="btn" style="background:linear-gradient(145deg,#7c2d0a,var(--orange));color:white;padding:14px;border-top:1px solid rgba(255,255,255,0.2)"
+                        onclick="updateGate('OUT')"><i class="fa fa-sign-out-alt"></i> Leaving</button>
+                    <button class="btn" style="background:linear-gradient(145deg,#052e16,var(--green));color:white;padding:14px;border-top:1px solid rgba(255,255,255,0.2)"
+                        onclick="updateGate('IN')"><i class="fa fa-sign-in-alt"></i> Entered</button>
+                </div>
+
+                <button class="btn-sos" onclick="triggerEmergency()">
+                    🚨 EMERGENCY HELP
+                </button>
             </div>
         </div>
 
-        <div class="table-container">
-            <h2><i class="fa fa-history" style="color:var(--accent-cyan)"></i> Activity Logs</h2>
+        <!-- Activity Log -->
+        <div class="table-wrap">
+            <div class="panel-title"><i class="fa fa-history"></i> Activity Logs</div>
             <table>
                 <thead>
-                    <tr>
-                        <th>Date/Time</th>
-                        <th>Service / Room</th>
-                        <th>Cost</th>
-                        <th>Status</th>
-                    </tr>
+                    <tr><th>Date/Time</th><th>Service</th><th>Cost</th><th>Status</th></tr>
                 </thead>
-                <tbody id="activityTable"></tbody>
+                <tbody id="activityTable">
+                    <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px">No recent activity.</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        const ham = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        ham.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
 
         let menuPrices = { bf: 45, lunch: 75, dinner: 85 };
 
         async function loadLiveMenu() {
             try {
-                const res = await fetch('api/dashboard.php?action=get_menu');
+                const res  = await fetch('api/dashboard.php?action=get_menu');
                 const data = await res.json();
                 if (data.status === 'success' && data.data.bf) {
-                    const adminMenu = data.data;
-                    document.getElementById('bfMenu').innerText = "Menu: " + adminMenu.bf.menu;
-                    document.getElementById('bfSwitch').parentElement.parentElement.querySelector('p').innerText = `Breakfast (৳ ${adminMenu.bf.price})`;
-                    menuPrices.bf = adminMenu.bf.price;
-                    
-                    document.getElementById('lunchMenu').innerText = "Menu: " + adminMenu.lunch.menu;
-                    document.getElementById('lunchSwitch').parentElement.parentElement.querySelector('p').innerText = `Lunch (৳ ${adminMenu.lunch.price})`;
-                    menuPrices.lunch = adminMenu.lunch.price;
-
-                    document.getElementById('dinnerMenu').innerText = "Menu: " + adminMenu.dinner.menu;
-                    document.getElementById('dinnerSwitch').parentElement.parentElement.querySelector('p').innerText = `Dinner (৳ ${adminMenu.dinner.price})`;
-                    menuPrices.dinner = adminMenu.dinner.price;
+                    const m = data.data;
+                    document.getElementById('bfMenu').innerText    = 'Menu: ' + m.bf.menu;
+                    document.getElementById('lunchMenu').innerText = 'Menu: ' + m.lunch.menu;
+                    document.getElementById('dinnerMenu').innerText= 'Menu: ' + m.dinner.menu;
+                    document.getElementById('bfLabel').innerText    = `Breakfast (৳ ${m.bf.price})`;
+                    document.getElementById('lunchLabel').innerText = `Lunch (৳ ${m.lunch.price})`;
+                    document.getElementById('dinnerLabel').innerText= `Dinner (৳ ${m.dinner.price})`;
+                    menuPrices = { bf: m.bf.price, lunch: m.lunch.price, dinner: m.dinner.price };
                 }
-            } catch (err) {
-                console.error("Error loading menu:", err);
-            }
+            } catch { console.error('Menu load error'); }
         }
 
         function calculateTotal() {
             let total = 0;
-            if(document.getElementById('bfSwitch').checked) total += parseInt(menuPrices.bf);
-            if(document.getElementById('lunchSwitch').checked) total += parseInt(menuPrices.lunch);
-            if(document.getElementById('dinnerSwitch').checked) total += parseInt(menuPrices.dinner);
-            
+            if (document.getElementById('bfSwitch').checked)     total += parseInt(menuPrices.bf);
+            if (document.getElementById('lunchSwitch').checked)  total += parseInt(menuPrices.lunch);
+            if (document.getElementById('dinnerSwitch').checked) total += parseInt(menuPrices.dinner);
             document.getElementById('monthlyBill').innerText = total;
-
-            if(total > 0) {
-                 sendRequestToAdmin('Meal', `Total: ৳ ${total}`, total);
-            }
+            if (total > 0) sendRequest('Meal', `Total: ৳ ${total}`, total);
         }
 
-        async function sendRequestToAdmin(type, detail, costQty = 0) {
-            const formData = new FormData();
-            formData.append('action', 'submit_request');
-            formData.append('type', type);
-            formData.append('detail', detail);
-            formData.append('qty', costQty);
-            formData.append('cost', costQty);
-
-            try {
-                await fetch('api/dashboard.php', { method: 'POST', body: formData });
-            } catch (err) {
-                console.error("Error sending request:", err);
-            }
+        async function sendRequest(type, detail, qty = 0) {
+            const fd = new FormData();
+            fd.append('action','submit_request'); fd.append('type', type);
+            fd.append('detail', detail); fd.append('qty', qty); fd.append('cost', qty);
+            try { await fetch('api/dashboard.php', { method: 'POST', body: fd }); } catch {}
         }
 
         function requestService() {
             const time = document.getElementById('repairTime').value;
             const type = document.getElementById('serviceType').value;
-            if(!time) return alert("Select time!");
-            sendRequestToAdmin(type, `At ${time}`);
-            alert('Request Sent to Admin!');
+            if (!time) return alert('Please select a time!');
+            sendRequest(type, `At ${time}`);
+            alert('✅ Request sent to Admin!');
         }
 
         function bookLaundry(type, inputId) {
             const qty = document.getElementById(inputId).value;
-            if(!qty || qty <= 0) return alert("Enter Quantity!");
-            sendRequestToAdmin(type, `${qty} Pieces`, qty);
-            alert('Laundry Booked!');
+            if (!qty || qty <= 0) return alert('Enter quantity!');
+            sendRequest(type, `${qty} Pieces`, qty);
+            alert('✅ Laundry booked!');
         }
 
-        // Overriding the inline onclicks dynamically
-        document.querySelector('button[onclick="alert(\'Laundry pickup scheduled!\')"]').onclick = function() { bookLaundry('Wash', 'washQty'); };
-        document.querySelector('button[onclick="alert(\'Ironing pickup scheduled!\')"]').onclick = function() { bookLaundry('Iron', 'ironQty'); };
-
         async function updateGate(status) {
-            const formData = new FormData();
-            formData.append('action', 'update_gate');
-            formData.append('status', status);
-
+            const fd = new FormData(); fd.append('action','update_gate'); fd.append('status', status);
             try {
-                const res = await fetch('api/dashboard.php', { method: 'POST', body: formData });
+                const res  = await fetch('api/dashboard.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
                     const now = new Date().toLocaleTimeString();
-                    document.getElementById('gateStatus').innerText = `STATUS: ${status}`;
+                    const el = document.getElementById('gateStatus');
+                    if (status === 'OUT') {
+                        el.innerText = '🚪 STATUS: OUTSIDE';
+                        el.className = 'gate-status-display outside';
+                    } else {
+                        el.innerText = '🏠 STATUS: INSIDE';
+                        el.className = 'gate-status-display inside';
+                    }
                     document.getElementById('syncTime').innerText = now;
                 }
-            } catch (err) {
-                console.error("Error updating gate:", err);
-            }
+            } catch { console.error('Gate error'); }
         }
 
         async function triggerEmergency() {
-            if(confirm("Confirm Emergency?")) {
-                const formData = new FormData();
-                formData.append('action', 'trigger_sos');
-                try {
-                    await fetch('api/dashboard.php', { method: 'POST', body: formData });
-                    alert("🚨 Emergency Signal Sent!");
-                } catch (err) {
-                    alert("Error sending emergency signal.");
-                }
-            }
+            if (!confirm('⚠️ Confirm Emergency? Admin will be alerted immediately!')) return;
+            const fd = new FormData(); fd.append('action','trigger_sos');
+            try {
+                await fetch('api/dashboard.php', { method: 'POST', body: fd });
+                alert('🚨 Emergency signal sent! Help is on the way.');
+            } catch { alert('Connection error.'); }
         }
 
         async function fetchUserInfo() {
             try {
-                const res = await fetch('api/auth.php', {
-                    method: 'POST',
-                    body: new URLSearchParams({ action: 'check_session' })
-                });
+                const fd = new FormData(); fd.append('action','check_session');
+                const res  = await fetch('api/auth.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    document.getElementById('welcomeUser').innerText = "Welcome, " + data.name + "!";
+                    document.getElementById('welcomeUser').innerHTML =
+                        `Welcome, <span class="accent">${data.name || 'Student'}!</span> 👋`;
                 }
-            } catch (err) {
-                console.error("Error fetching user info:", err);
-            }
+            } catch {}
         }
 
-        window.onload = function() {
-            fetchUserInfo();
-            loadLiveMenu();
-        };
+        window.onload = () => { fetchUserInfo(); loadLiveMenu(); };
     </script>
 </body>
 </html>
-
