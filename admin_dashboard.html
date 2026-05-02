@@ -30,7 +30,7 @@
                 <li class="active"><i class="fa fa-th-large"></i> Dashboard</li>
                 <li onclick="location.href='manage_rooms.html'"><i class="fa fa-bed"></i> Manage Rooms</li>
                 <li onclick="location.href='manage_bookings.html'"><i class="fa fa-clipboard-list"></i> Manage Bookings</li>
-                <li class="logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+                <li class="logout" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i> Logout</li>
             </ul>
         </nav>
     </div>
@@ -208,6 +208,12 @@
         }
 
         window.onload = () => { refreshDashboard(); setInterval(refreshDashboard, 5000); };
+
+        async function doLogout() {
+            const fd = new FormData(); fd.append('action','logout');
+            try { await fetch('api/auth.php', { method: 'POST', body: fd }); } catch {}
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>

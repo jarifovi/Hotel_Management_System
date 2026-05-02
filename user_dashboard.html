@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard – SmartHostel</Your Private fa-home>
+    <title>Student Dashboard – SmartHostel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="shared.css">
     <style>
@@ -87,7 +87,7 @@
             <li class="active"><i class="fa fa-home"></i> Dashboard</li>
             <li onclick="location.href='user_rooms.html'"><i class="fa fa-bed"></i> Book a Room</li>
             <li onclick="location.href='user_profile.html'"><i class="fa fa-user"></i> My Profile</li>
-            <li class="logout" onclick="location.href='login.html'"><i class="fa fa-sign-out-alt"></i> Logout</li>
+            <li class="logout" onclick="doLogout()"><i class="fa fa-sign-out-alt"></i> Logout</li>
         </ul></nav>
     </div>
 
@@ -313,6 +313,12 @@
         }
 
         window.onload = () => { fetchUserInfo(); loadLiveMenu(); };
+
+        async function doLogout() {
+            const fd = new FormData(); fd.append('action','logout');
+            try { await fetch('api/auth.php', { method: 'POST', body: fd }); } catch {}
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
