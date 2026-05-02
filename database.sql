@@ -1,5 +1,9 @@
-CREATE DATABASE IF NOT EXISTS smart_hostel;
-USE smart_hostel;
+-- ============================================================
+-- SmartHostel Database Schema
+-- FOR INFINITYFREE: Import this file AFTER creating the
+-- database through the InfinityFree control panel.
+-- The CREATE DATABASE and USE lines have been removed.
+-- ============================================================
 
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +42,7 @@ CREATE TABLE IF NOT EXISTS menu (
     price INT NOT NULL
 );
 
--- Insert default menu
+-- Insert default menu items
 INSERT IGNORE INTO menu (type, menu_text, price) VALUES 
 ('bf', 'Khichuri & Egg', 45),
 ('lunch', 'Rice, Fish Curry, Dal', 75),
